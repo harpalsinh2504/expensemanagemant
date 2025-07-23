@@ -136,43 +136,25 @@ $recentActivities = $conn->query("SELECT * FROM expenses ORDER BY expense_date D
 document.addEventListener('DOMContentLoaded', function() {
   const options = {
     chart: {
-      type: 'bar',
+      type: 'donut',
       height: 320,
       toolbar: { show: false },
       animations: { enabled: true, easing: 'easeinout', speed: 800 }
     },
-    series: [{ name: 'Spent', data: [] }],
-    xaxis: {
-      categories: [],
-      labels: { style: { fontSize: '12px', fontFamily: 'Arial, sans-serif' } }
-    },
-    yaxis: {
-      title: { text: 'Amount (₹)' },
-      labels: {
-        formatter: function (val) {
-          return '₹' + val.toLocaleString('en-IN');
-        }
-      }
-    },
+    series: [],
+    labels: [],
     title: {
       text: 'Monthly Spending',
       align: 'center',
       style: { fontSize: '16px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif' }
     },
-    colors: ['#4f8cff'],
-    plotOptions: {
-      bar: {
-        borderRadius: 4,
-        columnWidth: '50%'
-      }
-    },
-    dataLabels: { enabled: false },
+    colors: ['#4f8cff', '#6ed6ff', '#ffb347', '#ff6961', '#77dd77', '#f49ac2', '#aec6cf', '#cfcfc4'],
     noData: { text: 'Loading data...' },
     responsive: [{
       breakpoint: 768,
       options: {
-        chart: { height: 300 },
-        xaxis: { labels: { rotate: -45 } }
+        chart: { height: 220 },
+        legend: { position: 'bottom' }
       }
     }]
   };
@@ -182,22 +164,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
   fetch('get_expense_data.php?filter=monthly')
     .then(res => {
-      console.log('Fetch response status:', res.status, res.statusText);
+      // console.log('Fetch response status:', res.status, res.statusText);
       if (!res.ok) throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
       return res.json();
     })
     .then(rows => {
-      console.log('Fetched data:', rows);
+      // console.log('Fetched data:', rows);
       if (!rows || !Array.isArray(rows) || rows.length === 0) {
         chart.updateOptions({ noData: { text: 'No data available' } });
         return;
       }
-      const periods = rows.map(o => o.period || '');
-      const totals = rows.map(o => parseFloat(o.total) || 0);
-      chart.updateOptions({ xaxis: { categories: periods }, series: [{ data: totals }] });
+      const labels = rows.map(o => o.period || '');
+      const series = rows.map(o => parseFloat(o.total) || 0);
+      chart.updateOptions({ labels, series });
     })
     .catch(err => {
-      console.error('Chart data error:', err.message);
+      // console.error('Chart data error:', err.message);
       chart.updateOptions({ noData: { text: `Error loading data: ${err.message}` } });
     });
 });
